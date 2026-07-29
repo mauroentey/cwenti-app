@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Icono provisional del launcher">
+  <defs>
+    <linearGradient id="background" x1="140" y1="100" x2="850" y2="930" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1c8b68"/>
+      <stop offset="1" stop-color="#0b3f31"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="230" fill="url(#background)"/>
+  <circle cx="512" cy="512" r="304" fill="none" stroke="#c9f6e5" stroke-width="72"/>
+  <circle cx="512" cy="512" r="112" fill="#f6fffb"/>
+  <path d="M512 176v142M848 512H706M512 848V706M176 512h142" stroke="#f6fffb" stroke-width="76" stroke-linecap="round"/>
+</svg>

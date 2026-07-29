@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/schemas/official-app-registry.json",
+  "title": "Official application registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "generatedAt", "apps"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "apps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "version",
+          "description",
+          "category",
+          "availability"
+        ],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,63}$" },
+          "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "version": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"
+          },
+          "description": { "type": "string", "minLength": 1, "maxLength": 400 },
+          "category": { "type": "string", "minLength": 1, "maxLength": 60 },
+          "availability": {
+            "enum": ["bundled", "remote", "external"]
+          },
+          "sourcePath": { "type": "string", "pattern": "^examples/[A-Za-z0-9._/-]+$" },
+          "manifestUrl": { "type": "string", "format": "uri", "pattern": "^https://" },
+          "downloadUrl": { "type": "string", "format": "uri", "pattern": "^https://" },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "signature": { "type": "string", "minLength": 40, "maxLength": 3000 },
+          "sizeBytes": { "type": "integer", "minimum": 1 },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "changelog": {
+            "type": "array",
+            "maxItems": 20,
+            "items": { "type": "string", "maxLength": 300 }
+          }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "availability": { "const": "bundled" } } },
+            "then": { "required": ["sourcePath", "sha256"] }
+          },
+          {
+            "if": { "properties": { "availability": { "const": "remote" } } },
+            "then": {
+              "required": [
+                "manifestUrl",
+                "downloadUrl",
+                "sha256",
+                "signature",
+                "sizeBytes"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

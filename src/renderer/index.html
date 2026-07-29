@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'"
+    >
+    <title>Cwenti</title>
+    <link rel="stylesheet" href="styles/tokens.css">
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components.css">
+  </head>
+  <body>
+    <div class="shell">
+      <header id="app-header" class="app-header">
+        <div class="brand">
+          <button
+            id="nav-toggle"
+            class="nav-toggle"
+            type="button"
+            aria-label="Colapsar navegación"
+            aria-controls="primary-nav header-status"
+            aria-expanded="true"
+          >
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </button>
+          <img class="brand-mark" src="../../assets/branding/cwenti-icon.png" alt="">
+          <p id="product-name" class="brand-name">Cwenti</p>
+        </div>
+        <nav id="primary-nav" aria-label="Navegación principal">
+          <a href="#/library" data-route="library">Biblioteca</a>
+          <a href="#/settings" data-route="settings">Configuración</a>
+        </nav>
+        <div class="header-actions">
+          <div id="header-status" class="header-status">
+            <div class="status-line">
+              <span id="codex-dot" class="status-dot" aria-hidden="true"></span>
+              <span id="codex-sidebar-status">Codex</span>
+            </div>
+          </div>
+          <button id="quick-login" type="button">Cuenta</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <header class="topbar">
+          <h1 id="page-title">Biblioteca</h1>
+          <div class="topbar-actions">
+            <button id="refresh-button" class="icon-button" type="button" aria-label="Actualizar información">↻</button>
+          </div>
+        </header>
+        <div id="view" class="view" tabindex="-1"></div>
+      </main>
+    </div>
+
+    <dialog id="license-onboarding" class="modal modal-large" aria-labelledby="license-onboarding-title">
+      <div class="modal-header">
+        <h2 id="license-onboarding-title">Elige tu tipo de uso</h2>
+        <p>Se guarda solo en este equipo.</p>
+      </div>
+      <div class="choice-grid" role="tablist" aria-label="Modalidad de uso">
+        <button type="button" data-license-choice="personal">Personal</button>
+        <button type="button" data-license-choice="trial">Prueba · 30 días</button>
+        <button type="button" data-license-choice="commercial">Licencia</button>
+      </div>
+      <div id="license-choice-panel"></div>
+      <div class="modal-actions">
+        <button id="license-later" class="quiet" type="button">Ahora no, explorar Cwenti</button>
+      </div>
+    </dialog>
+
+    <dialog id="permission-dialog" class="modal" aria-labelledby="permission-title">
+      <form id="permission-form">
+        <div class="modal-header">
+          <h2 id="permission-title">Permisos de la aplicación</h2>
+          <p id="permission-app-name"></p>
+        </div>
+        <dl id="permission-list" class="permission-list"></dl>
+        <label class="check-row">
+          <input id="permission-declaration" type="checkbox" required>
+          <span>Acepto estos permisos.</span>
+        </label>
+        <div class="modal-actions">
+          <button id="permission-cancel" type="button">Cancelar</button>
+          <button class="primary" type="submit">Aceptar y abrir</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+    <script type="module" src="scripts/app.js"></script>
+  </body>
+</html>

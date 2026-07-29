@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-28T00:00:00.000Z",
+  "apps": [
+    {
+      "id": "clax",
+      "name": "Clax",
+      "version": "0.1.5",
+      "description": "Biblioteca académica local para crear y estudiar cursos personalizados con IA.",
+      "category": "Educación",
+      "availability": "external",
+      "updatedAt": "2026-07-28T00:00:00.000Z",
+      "changelog": ["Integración inicial con Cwenti mediante el adaptador de aplicaciones existentes."]
+    },
+    {
+      "id": "kaikei",
+      "name": "Kaikei",
+      "version": "0.1.0",
+      "description": "Aplicación de escritorio para conciliación bancaria asistida por Codex App Server.",
+      "category": "Finanzas",
+      "availability": "external",
+      "updatedAt": "2026-07-28T00:00:00.000Z",
+      "changelog": ["Integración inicial con Cwenti mediante el adaptador de aplicaciones existentes."]
+    },
+    {
+      "id": "noman",
+      "name": "Noman",
+      "version": "0.1.1",
+      "description": "Asistente de WhatsApp con IA ejecutado localmente mediante Codex App Server.",
+      "category": "Comunicación",
+      "availability": "external",
+      "updatedAt": "2026-07-28T00:00:00.000Z",
+      "changelog": ["Integración inicial con Cwenti mediante el adaptador de aplicaciones existentes."]
+    }
+  ]
+}
