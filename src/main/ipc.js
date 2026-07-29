@@ -22,6 +22,15 @@ import {
 const MAX_TEXT_FILE_BYTES = 2 * 1024 * 1024;
 const MAX_LICENSE_BYTES = 1024 * 1024;
 
+async function interfaceLanguage(services) {
+  const settings = await services.settings.read();
+  return settings.language === "es" ? "es" : "en";
+}
+
+function localized(language, english, spanish) {
+  return language === "es" ? spanish : english;
+}
+
 function assertAppId(value) {
   if (typeof value !== "string" || !/^[a-z][a-z0-9-]{1,63}$/.test(value)) {
     throw new LauncherError("APP_ID_INVALID", "El identificador de aplicación no es válido.");
@@ -122,9 +131,14 @@ export function registerIpc(services) {
     if (catalogApp.availability !== "external") {
       throw new LauncherError("APP_LOCATION_NOT_SUPPORTED", "Esta aplicación es administrada directamente por Cwenti.");
     }
+    const language = await interfaceLanguage(services);
     const result = await dialog.showOpenDialog(services.windows.launcherWindow, {
-      title: `Localizar ${catalogApp.name}`,
-      message: `Seleccione ${catalogApp.name}.app o ${catalogApp.name}.exe`,
+      title: localized(language, `Locate ${catalogApp.name}`, `Localizar ${catalogApp.name}`),
+      message: localized(
+        language,
+        `Select ${catalogApp.name}.app or ${catalogApp.name}.exe`,
+        `Seleccione ${catalogApp.name}.app o ${catalogApp.name}.exe`,
+      ),
       properties: ["openFile", "openDirectory"],
     });
     if (result.canceled || result.filePaths.length !== 1) return null;
@@ -168,10 +182,14 @@ export function registerIpc(services) {
   launcherHandler("launcher:select-personal", ({ declarationAccepted }) => services.license.selectPersonal(declarationAccepted));
   launcherHandler("launcher:start-trial", (input) => services.license.startTrial(input));
   launcherHandler("launcher:import-license", async () => {
+    const language = await interfaceLanguage(services);
     const result = await dialog.showOpenDialog(services.windows.launcherWindow, {
-      title: "Importar licencia comercial",
+      title: localized(language, "Import commercial license", "Importar licencia comercial"),
       properties: ["openFile"],
-      filters: [{ name: "Licencia JSON", extensions: ["json"] }],
+      filters: [{
+        name: localized(language, "JSON license", "Licencia JSON"),
+        extensions: ["json"],
+      }],
     });
     if (result.canceled || result.filePaths.length !== 1) return null;
     const filePath = result.filePaths[0];
@@ -190,12 +208,21 @@ export function registerIpc(services) {
     return services.license.activate(document);
   });
   launcherHandler("launcher:remove-license", async () => {
+    const language = await interfaceLanguage(services);
     const result = await dialog.showMessageBox(services.windows.launcherWindow, {
       type: "warning",
-      title: "Remover licencia",
-      message: "¿Desea remover la licencia comercial de este dispositivo?",
-      detail: "No se borrarán proyectos, historial ni configuración.",
-      buttons: ["Cancelar", "Remover licencia"],
+      title: localized(language, "Remove license", "Remover licencia"),
+      message: localized(
+        language,
+        "Remove the commercial license from this device?",
+        "¿Desea remover la licencia comercial de este dispositivo?",
+      ),
+      detail: localized(
+        language,
+        "Projects, history, and settings will not be deleted.",
+        "No se borrarán proyectos, historial ni configuración.",
+      ),
+      buttons: language === "es" ? ["Cancelar", "Remover licencia"] : ["Cancel", "Remove license"],
       defaultId: 0,
       cancelId: 0,
     });
@@ -227,6 +254,7 @@ export function registerIpc(services) {
     const allowed = {};
     if (typeof patch.autoUpdates === "boolean") allowed.autoUpdates = patch.autoUpdates;
     if (["system", "light", "dark"].includes(patch.theme)) allowed.theme = patch.theme;
+    if (["en", "es"].includes(patch.language)) allowed.language = patch.language;
     return services.settings.update((settings) => ({ ...settings, ...allowed }));
   });
   launcherHandler("launcher:check-updates", () => services.updates.check());
@@ -245,8 +273,9 @@ export function registerIpc(services) {
   });
 
   launcherHandler("launcher:export-user-data", async () => {
+    const language = await interfaceLanguage(services);
     const result = await dialog.showSaveDialog(services.windows.launcherWindow, {
-      title: "Exportar configuración e historial",
+      title: localized(language, "Export settings and history", "Exportar configuración e historial"),
       defaultPath: `launcher-export-${new Date().toISOString().slice(0, 10)}.json`,
       filters: [{ name: "JSON", extensions: ["json"] }],
     });
@@ -267,7 +296,11 @@ export function registerIpc(services) {
       licenseStatus: await services.license.getStatus(),
       settings: await services.settings.read(),
       apps,
-      note: "Los proyectos permanecen en sus workspaces originales; este archivo exporta referencias, configuración e historial, no el contenido de los proyectos.",
+      note: localized(
+        language,
+        "Projects remain in their original workspaces; this file exports references, settings, and history, not project contents.",
+        "Los proyectos permanecen en sus workspaces originales; este archivo exporta referencias, configuración e historial, no el contenido de los proyectos.",
+      ),
     };
     await writeFile(result.filePath, `${JSON.stringify(exportDocument, null, 2)}\n`, {
       encoding: "utf8",
@@ -277,18 +310,27 @@ export function registerIpc(services) {
   });
 
   launcherHandler("launcher:export-diagnostics", async () => {
+    const language = await interfaceLanguage(services);
     const confirmation = await dialog.showMessageBox(services.windows.launcherWindow, {
       type: "question",
-      title: "Exportar diagnóstico",
-      message: "¿Incluir información básica del sistema?",
-      detail: "Nunca se incluirá el contenido de sus proyectos. Puede cancelar o exportar con versión, plataforma y estados técnicos.",
-      buttons: ["Cancelar", "Exportar diagnóstico"],
+      title: localized(language, "Export diagnostics", "Exportar diagnóstico"),
+      message: localized(
+        language,
+        "Include basic system information?",
+        "¿Incluir información básica del sistema?",
+      ),
+      detail: localized(
+        language,
+        "Project contents are never included. You can cancel or export version, platform, and technical status information.",
+        "Nunca se incluirá el contenido de sus proyectos. Puede cancelar o exportar con versión, plataforma y estados técnicos.",
+      ),
+      buttons: language === "es" ? ["Cancelar", "Exportar diagnóstico"] : ["Cancel", "Export diagnostics"],
       defaultId: 1,
       cancelId: 0,
     });
     if (confirmation.response !== 1) return null;
     const result = await dialog.showSaveDialog(services.windows.launcherWindow, {
-      title: "Guardar diagnóstico",
+      title: localized(language, "Save diagnostics", "Guardar diagnóstico"),
       defaultPath: `launcher-diagnostic-${Date.now()}.json`,
       filters: [{ name: "JSON", extensions: ["json"] }],
     });
@@ -314,8 +356,9 @@ export function registerIpc(services) {
     if (process.env.LAUNCHER_DEV_MODE !== "1") {
       throw new LauncherError("DEVELOPMENT_MODE_DISABLED", "El modo de desarrollo está desactivado.");
     }
+    const language = await interfaceLanguage(services);
     const result = await dialog.showOpenDialog(services.windows.launcherWindow, {
-      title: "Seleccionar carpeta de aplicación",
+      title: localized(language, "Select application folder", "Seleccionar carpeta de aplicación"),
       properties: ["openDirectory"],
     });
     if (result.canceled || result.filePaths.length !== 1) return null;
@@ -338,21 +381,30 @@ export function registerIpc(services) {
     };
   });
   appHandler("app:choose-workspace", async (appId) => {
+    const language = await interfaceLanguage(services);
     const current = await services.workspaces.get(appId);
     if (current) {
       const confirmation = await dialog.showMessageBox(services.windows.appWindows.get(appId), {
         type: "question",
-        title: "Cambiar workspace",
-        message: `El workspace activo es “${current.name}”.`,
-        detail: "Cambiarlo no mueve ni borra archivos. Los nuevos threads usarán la carpeta nueva.",
-        buttons: ["Cancelar", "Cambiar carpeta"],
+        title: localized(language, "Change workspace", "Cambiar workspace"),
+        message: localized(
+          language,
+          `The active workspace is “${current.name}”.`,
+          `El workspace activo es “${current.name}”.`,
+        ),
+        detail: localized(
+          language,
+          "Changing it does not move or delete files. New threads will use the new folder.",
+          "Cambiarlo no mueve ni borra archivos. Los nuevos threads usarán la carpeta nueva.",
+        ),
+        buttons: language === "es" ? ["Cancelar", "Cambiar carpeta"] : ["Cancel", "Change folder"],
         defaultId: 0,
         cancelId: 0,
       });
       if (confirmation.response !== 1) return current;
     }
     const result = await dialog.showOpenDialog(services.windows.appWindows.get(appId), {
-      title: "Seleccionar workspace",
+      title: localized(language, "Select workspace", "Seleccionar workspace"),
       properties: ["openDirectory", "createDirectory"],
     });
     if (result.canceled || result.filePaths.length !== 1) return current;
@@ -429,12 +481,17 @@ export function registerIpc(services) {
     if (installed.manifest.permissions.externalLinks !== "ask" || !isSafeExternalUrl(url)) {
       throw new LauncherError("URL_NOT_ALLOWED", "La aplicación no puede abrir este enlace.");
     }
+    const language = await interfaceLanguage(services);
     const confirmation = await dialog.showMessageBox(services.windows.appWindows.get(appId), {
       type: "question",
-      title: "Abrir enlace externo",
-      message: "La aplicación solicita abrir un enlace HTTPS en su navegador.",
+      title: localized(language, "Open external link", "Abrir enlace externo"),
+      message: localized(
+        language,
+        "The application wants to open an HTTPS link in your browser.",
+        "La aplicación solicita abrir un enlace HTTPS en su navegador.",
+      ),
       detail: url.slice(0, 1_000),
-      buttons: ["Rechazar", "Abrir enlace"],
+      buttons: language === "es" ? ["Rechazar", "Abrir enlace"] : ["Reject", "Open link"],
       defaultId: 0,
       cancelId: 0,
     });

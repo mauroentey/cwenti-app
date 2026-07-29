@@ -5,6 +5,12 @@ import {
   element,
   field,
 } from "./dom.js";
+import {
+  getLocale,
+  setLocale,
+  t,
+  translateDocument,
+} from "./i18n.js";
 import { startRouter } from "./router.js";
 import { setBusy, state, updateState } from "./state.js";
 
@@ -51,11 +57,14 @@ function showToast(message, error = false) {
 }
 
 function displayDate(value) {
-  if (!value) return "No indicada";
+  if (!value) return t("date.unspecified");
   const date = new Date(value);
   return Number.isNaN(date.getTime())
-    ? "No indicada"
-    : new Intl.DateTimeFormat("es", { dateStyle: "medium", timeStyle: "short" }).format(date);
+    ? t("date.unspecified")
+    : new Intl.DateTimeFormat(getLocale() === "es" ? "es-CO" : "en-US", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(date);
 }
 
 function statusTone(status) {
@@ -93,15 +102,15 @@ function updateChrome() {
   document.documentElement.dataset.theme = bootstrap.settings.theme ?? "system";
   const codexStatus = document.querySelector("#codex-sidebar-status");
   const codexDot = document.querySelector("#codex-dot");
-  codexStatus.textContent = bootstrap.codex.checking
+  codexStatus.textContent = t(bootstrap.codex.checking
     ? "Conectando"
     : bootstrap.codex.available
     ? bootstrap.codex.authenticated
       ? "Codex"
       : "Sin sesión"
-    : "Sin Codex";
+    : "Sin Codex");
   codexDot.className = `status-dot ${bootstrap.codex.authenticated ? "good" : bootstrap.codex.available ? "warning" : "bad"}`;
-  quickLogin.textContent = bootstrap.codex.authenticated ? "Salir" : "Iniciar sesión";
+  quickLogin.textContent = t(bootstrap.codex.authenticated ? "Salir" : "Iniciar sesión");
   for (const link of document.querySelectorAll("#primary-nav a")) {
     if (link.dataset.route === state.route) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
@@ -111,12 +120,14 @@ function updateChrome() {
 function setNavigationCollapsed(collapsed) {
   appHeader.classList.toggle("collapsed", collapsed);
   navToggle.setAttribute("aria-expanded", String(!collapsed));
-  navToggle.setAttribute("aria-label", collapsed ? "Expandir navegación" : "Colapsar navegación");
+  navToggle.setAttribute("aria-label", t(collapsed ? "nav.expand" : "nav.collapse"));
   localStorage.setItem(navPreferenceKey, collapsed ? "true" : "false");
 }
 
 async function refreshBootstrap() {
   const bootstrap = await call(() => api.getBootstrap());
+  setLocale(bootstrap.settings.language);
+  translateDocument();
   updateState({ bootstrap, apps: bootstrap.apps });
   updateChrome();
   if (bootstrap.license.mode === "unselected" && !licenseDialog.open) {
@@ -155,7 +166,7 @@ function renderAppCard(app) {
       element("img", {
         className: "app-logo",
         src: appLogoSources[app.id],
-        alt: `Logo de ${app.name}`,
+        alt: t("app.logo", { name: app.name }),
         loading: "eager",
       }),
       badge(appStatusLabel(app), statusTone(app.status)),
@@ -181,7 +192,7 @@ async function handleAppAction(app) {
     const result = await runAction(
       app.id,
       () => api.locateApp(app.id),
-      `${app.name} conectada con Cwenti.`,
+      t("app.connected", { name: app.name }),
     );
     if (result) {
       await refreshApps();
@@ -197,7 +208,7 @@ async function handleAppAction(app) {
 }
 
 async function handleUninstall(app) {
-  if (!window.confirm(`¿Desinstalar ${app.name}? Los proyectos y el historial se conservarán.`)) return;
+  if (!window.confirm(t("app.uninstallConfirm", { name: app.name }))) return;
   await runAction(app.id, () => api.uninstallApp(app.id), "Aplicación desinstalada; los proyectos se conservaron.");
   await refreshApps();
   renderCurrentRoute();
@@ -262,7 +273,10 @@ function renderLicense() {
         element("p", { className: "eyebrow", text: "Estado" }),
         element("h2", { text: licenseLabel(license) }),
         expiration
-          ? element("p", { className: "muted", text: `Vence ${displayDate(expiration)}` })
+          ? element("p", {
+              className: "muted",
+              text: t("license.expires", { date: displayDate(expiration) }),
+            })
           : null,
       ]),
       element("div", { className: "inline-actions" }, actions),
@@ -288,6 +302,20 @@ function settingControl(label, description, control) {
 
 function renderGeneralSettings() {
   const settings = state.bootstrap.settings;
+  const languageSelect = element("select", { ariaLabel: t("settings.languageAria") }, [
+    element("option", { value: "en", text: "English" }),
+    element("option", { value: "es", text: "Español" }),
+  ]);
+  languageSelect.value = settings.language ?? "en";
+  languageSelect.addEventListener("change", async () => {
+    const language = languageSelect.value === "es" ? "es" : "en";
+    await runAction("settings-language", () => api.updateSettings({ language }));
+    state.bootstrap.settings.language = language;
+    setLocale(language);
+    translateDocument();
+    updateChrome();
+    await renderCurrentRoute();
+  });
   const themeSelect = element("select", { ariaLabel: "Tema visual" }, [
     element("option", { value: "system", text: "Sistema" }),
     element("option", { value: "light", text: "Claro" }),
@@ -330,7 +358,7 @@ function renderGeneralSettings() {
         ? "Reiniciar e instalar"
         : "Comprobar actualizaciones",
     onClick: async () => {
-      if (updatePhase === "downloaded" && !window.confirm("¿Reiniciar ahora para instalar la actualización?")) return;
+      if (updatePhase === "downloaded" && !window.confirm(t("updates.restartConfirm"))) return;
       const result = await runAction(
         "updates",
         () => updatePhase === "available"
@@ -374,6 +402,7 @@ function renderGeneralSettings() {
   }
   return element("div", {}, [
     element("section", { className: "section panel" }, [
+      settingControl(t("settings.language"), "", languageSelect),
       settingControl("Tema", "", themeSelect),
       settingControl("Actualizaciones automáticas", "", updatesToggle),
       settingControl("Codex", "", codexButton),
@@ -457,7 +486,7 @@ async function renderSettings() {
 
 async function renderCurrentRoute() {
   const route = state.route;
-  pageTitle.textContent = pageMetadata[route];
+  pageTitle.textContent = t(pageMetadata[route]);
   updateChrome();
   clear(view);
   let content;
@@ -570,7 +599,7 @@ async function importLicense() {
 
 function showPermissionDialog(app) {
   pendingPermissionApp = app;
-  permissionTitle.textContent = "Permisos de la aplicación";
+  permissionTitle.textContent = t("permissions.title");
   permissionAppName.textContent = app.name;
   clear(permissionList);
   const labels = {
@@ -591,7 +620,7 @@ function showPermissionDialog(app) {
 
 async function handleCodexAuth() {
   const authenticated = state.bootstrap.codex.authenticated;
-  if (authenticated && !window.confirm("¿Cerrar la sesión de Codex en este equipo?")) return;
+  if (authenticated && !window.confirm(t("auth.logoutConfirm"))) return;
   await runAction(
     "codex-auth",
     () => authenticated ? api.logoutCodex() : api.loginCodex(),

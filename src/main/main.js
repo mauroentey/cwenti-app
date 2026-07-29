@@ -32,6 +32,7 @@ async function boot() {
   await logger.initialize();
   const launcherVersion = app.getVersion();
   const settings = new AtomicJsonStore(path.join(userDataPath, "settings.json"), {
+    language: "en",
     theme: "system",
     autoUpdates: true,
     codexEnabled: true,
@@ -152,6 +153,7 @@ async function boot() {
                   resolve({
                     productName: bootstrap.product.productName,
                     names,
+                    language: document.documentElement.lang,
                     route: location.hash,
                     navigation: [...document.querySelectorAll("#primary-nav a")]
                       .map((item) => item.textContent),
@@ -178,7 +180,8 @@ async function boot() {
           result.productName !== "Cwenti" ||
           result.names.join(",") !== "Clax,Kaikei,Noman" ||
           result.route !== "#/library" ||
-          result.navigation.join(",") !== "Biblioteca,Configuración" ||
+          result.language !== "en" ||
+          result.navigation.join(",") !== "Library,Settings" ||
           result.logoCount !== 3
         ) {
           throw new Error("Cwenti no devolvió el catálogo esperado.");
