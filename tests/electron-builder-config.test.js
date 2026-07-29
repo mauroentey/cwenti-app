@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import builderConfig from "../electron-builder.config.js";
 
@@ -33,4 +34,12 @@ test("selecciona explícitamente las apps de Windows en una compilación cruzada
 
 test("firma el paquete macOS de forma ad hoc cuando no hay Developer ID", () => {
   assert.equal(builderConfig.mac.identity, "-");
+  const entitlements = readFileSync(
+    builderConfig.mac.entitlements,
+    "utf8",
+  );
+  assert.match(
+    entitlements,
+    /<key>com\.apple\.security\.cs\.disable-library-validation<\/key>\s*<true\/>/,
+  );
 });
