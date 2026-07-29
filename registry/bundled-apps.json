@@ -1,36 +1,45 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-28T00:00:00.000Z",
+  "generatedAt": "2026-07-29T00:00:00.000Z",
   "apps": [
     {
       "id": "clax",
       "name": "Clax",
-      "version": "0.1.5",
-      "description": "Biblioteca académica local para crear y estudiar cursos personalizados con IA.",
-      "category": "Educación",
+      "version": "0.1.6",
+      "description": "A local course library for creating and studying personalized learning paths with AI.",
+      "descriptionEs": "Biblioteca académica local para crear y estudiar cursos personalizados con IA.",
+      "category": "Education",
+      "categoryEs": "Educación",
       "availability": "external",
-      "updatedAt": "2026-07-28T00:00:00.000Z",
-      "changelog": ["Integración inicial con Cwenti mediante el adaptador de aplicaciones existentes."]
+      "updatedAt": "2026-07-29T00:00:00.000Z",
+      "changelog": ["Electron distribution hardened for the Cwenti suite."],
+      "changelogEs": ["Distribución Electron reforzada para la suite Cwenti."]
     },
     {
       "id": "kaikei",
       "name": "Kaikei",
-      "version": "0.1.0",
-      "description": "Aplicación de escritorio para conciliación bancaria asistida por Codex App Server.",
-      "category": "Finanzas",
+      "version": "0.1.2",
+      "description": "Desktop bank reconciliation assisted by Codex App Server.",
+      "descriptionEs": "Aplicación de escritorio para conciliación bancaria asistida por Codex App Server.",
+      "category": "Finance",
+      "categoryEs": "Finanzas",
       "availability": "external",
-      "updatedAt": "2026-07-28T00:00:00.000Z",
-      "changelog": ["Integración inicial con Cwenti mediante el adaptador de aplicaciones existentes."]
+      "updatedAt": "2026-07-29T00:00:00.000Z",
+      "changelog": ["Deep-signed macOS Electron bundle and current Codex client version."],
+      "changelogEs": ["Bundle Electron de macOS con firma profunda y versión actual del cliente Codex."]
     },
     {
       "id": "noman",
       "name": "Noman",
-      "version": "0.1.1",
-      "description": "Asistente de WhatsApp con IA ejecutado localmente mediante Codex App Server.",
-      "category": "Comunicación",
+      "version": "0.1.2",
+      "description": "A local AI assistant for WhatsApp powered by Codex App Server.",
+      "descriptionEs": "Asistente de WhatsApp con IA ejecutado localmente mediante Codex App Server.",
+      "category": "Communication",
+      "categoryEs": "Comunicación",
       "availability": "external",
-      "updatedAt": "2026-07-28T00:00:00.000Z",
-      "changelog": ["Integración inicial con Cwenti mediante el adaptador de aplicaciones existentes."]
+      "updatedAt": "2026-07-29T00:00:00.000Z",
+      "changelog": ["Official icon, complete test discovery, and Cwenti release bundles."],
+      "changelogEs": ["Icono oficial, suite de pruebas completa y bundles de release para Cwenti."]
     }
   ]
 }

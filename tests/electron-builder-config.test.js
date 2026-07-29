@@ -24,6 +24,25 @@ function bundledAppsPath(platform) {
   );
 }
 
+function configuredMacIdentity() {
+  return execFileSync(
+    process.execPath,
+    [
+      "--input-type=module",
+      "--eval",
+      "import config from './electron-builder.config.js'; process.stdout.write(String(config.mac.identity));",
+    ],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        CSC_LINK: "configured-in-ci",
+      },
+    },
+  );
+}
+
 test("selecciona explícitamente las apps de macOS para el paquete macOS", () => {
   assert.equal(bundledAppsPath("darwin"), "bundled-apps/darwin");
 });
@@ -50,4 +69,8 @@ test("firma el paquete macOS de forma ad hoc cuando no hay Developer ID", () => 
     entitlements,
     /<key>com\.apple\.security\.cs\.allow-unsigned-executable-memory<\/key>\s*<true\/>/,
   );
+});
+
+test("permite que electron-builder seleccione Developer ID cuando CI configura firma", () => {
+  assert.equal(configuredMacIdentity(), "undefined");
 });

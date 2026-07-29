@@ -11,49 +11,42 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  publish:
+  package:
     strategy:
-      fail-fast: true
-      max-parallel: 1
+      fail-fast: false
       matrix:
         include:
           - os: macos-latest
             bundle_platform: darwin
-            command: npm run release:mac:arm64
-            clax_url: ${{ vars.CWENTI_CLAX_MAC_URL }}
-            kaikei_url: ${{ vars.CWENTI_KAIKEI_MAC_URL }}
-            noman_url: ${{ vars.CWENTI_NOMAN_MAC_URL }}
+            bundle_arch: arm64
+            command: npm run dist:mac:arm64
+            artifact: macos-arm64
           - os: windows-latest
             bundle_platform: win32
-            command: npm run release:win
-            clax_url: ${{ vars.CWENTI_CLAX_WIN_URL }}
-            kaikei_url: ${{ vars.CWENTI_KAIKEI_WIN_URL }}
-            noman_url: ${{ vars.CWENTI_NOMAN_WIN_URL }}
+            bundle_arch: x64
+            command: npm run dist:win
+            artifact: windows-x64
 
     runs-on: ${{ matrix.os }}
     env:
       CWENTI_BUNDLE_PLATFORM: ${{ matrix.bundle_platform }}
-      CWENTI_CLAX_BUNDLE_URL: ${{ matrix.clax_url }}
-      CWENTI_KAIKEI_BUNDLE_URL: ${{ matrix.kaikei_url }}
-      CWENTI_NOMAN_BUNDLE_URL: ${{ matrix.noman_url }}
-      CWENTI_BUNDLE_TOKEN: ${{ secrets.CWENTI_BUNDLE_TOKEN }}
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      CSC_LINK: ${{ secrets.CSC_LINK }}
-      CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-      APPLE_ID: ${{ secrets.APPLE_ID }}
-      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-      WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
-      WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+      CWENTI_BUNDLE_ARCH: ${{ matrix.bundle_arch }}
+      CSC_LINK: ${{ matrix.bundle_platform == 'darwin' && secrets.CSC_LINK || '' }}
+      CSC_KEY_PASSWORD: ${{ matrix.bundle_platform == 'darwin' && secrets.CSC_KEY_PASSWORD || '' }}
+      APPLE_ID: ${{ matrix.bundle_platform == 'darwin' && secrets.APPLE_ID || '' }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ matrix.bundle_platform == 'darwin' && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
+      APPLE_TEAM_ID: ${{ matrix.bundle_platform == 'darwin' && secrets.APPLE_TEAM_ID || '' }}
+      WIN_CSC_LINK: ${{ matrix.bundle_platform == 'win32' && secrets.WIN_CSC_LINK || '' }}
+      WIN_CSC_KEY_PASSWORD: ${{ matrix.bundle_platform == 'win32' && secrets.WIN_CSC_KEY_PASSWORD || '' }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.release_tag || github.ref }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -66,3 +59,41 @@ jobs:
           test "$actual" = "$expected"
       - run: npm run download:apps
       - run: ${{ matrix.command }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Cwenti-release-${{ matrix.artifact }}
+          path: |
+            release/*.dmg
+            release/*.zip
+            release/*.exe
+            release/*.blockmap
+            release/*.yml
+          if-no-files-found: error
+
+  publish:
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release
+          merge-multiple: true
+      - name: Publish verified installers
+        shell: bash
+        run: |
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" release/* \
+              --repo "$GITHUB_REPOSITORY" \
+              --clobber
+          else
+            gh release create "$RELEASE_TAG" release/* \
+              --repo "$GITHUB_REPOSITORY" \
+              --verify-tag \
+              --generate-notes \
+              --title "Cwenti ${RELEASE_TAG#v}"
+          fi

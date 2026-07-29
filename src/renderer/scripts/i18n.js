@@ -93,7 +93,7 @@ export const messages = Object.freeze({
     es: "Cwenti no envía telemetría propia.",
   },
   "privacy.disabled": { en: "Disabled", es: "Desactivada" },
-  "about.version": { en: "Version 0.1.0", es: "Versión 0.1.0" },
+  "about.version": { en: "Version {version}", es: "Versión {version}" },
   "settings.general": { en: "General", es: "General" },
   "settings.license": { en: "License", es: "Licencia" },
   "settings.activity": { en: "Activity", es: "Actividad" },

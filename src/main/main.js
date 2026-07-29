@@ -101,6 +101,7 @@ async function boot() {
     launcherVersion,
     publicProduct: {
       productName: productConfig.productName,
+      version: launcherVersion,
       legalName: productConfig.legalName,
       commercialEmail: productConfig.commercialEmail,
       website: productConfig.website,

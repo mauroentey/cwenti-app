@@ -103,9 +103,15 @@ npm run licenses
 Platform builds:
 
 ```bash
+npm run download:apps
 npm run dist:mac:arm64
+# Run the Windows command on Windows:
 npm run dist:win
 ```
+
+The suite lock pins the official Clax, Kaikei, and Noman release ZIPs by
+version, exact size, and SHA-256. Packaging fails before extraction if any
+download differs from that lock.
 
 Read the focused documentation for
 [Codex integration](docs/CODEX_INTEGRATION.md),

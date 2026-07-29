@@ -37,8 +37,8 @@ let pendingPermissionApp = null;
 const navPreferenceKey = "cwenti.navigation.collapsed";
 
 const pageMetadata = {
-  library: "Biblioteca",
-  settings: "Configuración",
+  library: "library",
+  settings: "settings",
 };
 
 const appLogoSources = {
@@ -76,23 +76,24 @@ function statusTone(status) {
 
 function appStatusLabel(app) {
   return {
-    available: "Disponible",
-    installed: "Instalada",
-    "update-available": "Actualización disponible",
-    "migration-required": "Preparada para migración",
+    available: t("status.available"),
+    installed: t("status.installed"),
+    "update-available": t("status.updateAvailable"),
+    "migration-required": t("status.migrationRequired"),
   }[app.status] ?? app.status;
 }
 
 function licenseLabel(license) {
-  return {
-    unselected: "Sin seleccionar",
-    personal: "Uso personal",
-    trial: "Prueba activa",
-    "trial-expired": "Prueba finalizada",
-    commercial: "Licencia comercial",
-    "commercial-expired": "Licencia vencida",
-    invalid: "Licencia inválida",
-  }[license.mode] ?? license.mode;
+  const key = {
+    unselected: "license.unselected",
+    personal: "license.personal",
+    trial: "license.trial",
+    "trial-expired": "license.trialExpired",
+    commercial: "license.commercial",
+    "commercial-expired": "license.commercialExpired",
+    invalid: "license.invalid",
+  }[license.mode];
+  return key ? t(key) : license.mode;
 }
 
 function updateChrome() {
@@ -103,14 +104,16 @@ function updateChrome() {
   const codexStatus = document.querySelector("#codex-sidebar-status");
   const codexDot = document.querySelector("#codex-dot");
   codexStatus.textContent = t(bootstrap.codex.checking
-    ? "Conectando"
+    ? "codex.connecting"
     : bootstrap.codex.available
     ? bootstrap.codex.authenticated
       ? "Codex"
-      : "Sin sesión"
-    : "Sin Codex");
+      : "codex.signedOut"
+    : "codex.unavailable");
   codexDot.className = `status-dot ${bootstrap.codex.authenticated ? "good" : bootstrap.codex.available ? "warning" : "bad"}`;
-  quickLogin.textContent = t(bootstrap.codex.authenticated ? "Salir" : "Iniciar sesión");
+  quickLogin.textContent = t(
+    bootstrap.codex.authenticated ? "account.signOut" : "account.signIn",
+  );
   for (const link of document.querySelectorAll("#primary-nav a")) {
     if (link.dataset.route === state.route) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
@@ -139,12 +142,12 @@ async function refreshBootstrap() {
 
 function renderAppCard(app) {
   const actionLabel = app.status === "update-available"
-    ? "Actualizar"
+    ? t("action.update")
     : app.status === "installed"
-      ? "Abrir"
+      ? t("action.open")
       : app.managedExternally
-        ? "Localizar"
-        : "Instalar";
+        ? t("action.locate")
+        : t("action.install");
   const action = element("button", {
     className: app.status === "migration-required" ? "" : "primary",
     type: "button",
@@ -157,7 +160,7 @@ function renderAppCard(app) {
     secondaryActions.push(element("button", {
       className: "quiet danger",
       type: "button",
-      text: "Desinstalar",
+      text: t("action.uninstall"),
       onClick: () => handleUninstall(app),
     }));
   }
@@ -174,7 +177,9 @@ function renderAppCard(app) {
     element("div", { className: "app-card-footer" }, [
       element("div", { className: "app-identity" }, [
         element("h2", { text: app.name }),
-        element("p", { text: app.category }),
+        element("p", {
+          text: getLocale() === "es" ? app.categoryEs ?? app.category : app.category,
+        }),
       ]),
       ...secondaryActions,
       action,
@@ -201,7 +206,7 @@ async function handleAppAction(app) {
     return;
   }
   if (app.status === "available" || app.status === "update-available") {
-    await runAction(app.id, () => api.installApp(app.id), "Aplicación instalada.");
+    await runAction(app.id, () => api.installApp(app.id), t("app.installed"));
     await refreshApps();
     renderCurrentRoute();
   }
@@ -209,7 +214,7 @@ async function handleAppAction(app) {
 
 async function handleUninstall(app) {
   if (!window.confirm(t("app.uninstallConfirm", { name: app.name }))) return;
-  await runAction(app.id, () => api.uninstallApp(app.id), "Aplicación desinstalada; los proyectos se conservaron.");
+  await runAction(app.id, () => api.uninstallApp(app.id), t("app.uninstalled"));
   await refreshApps();
   renderCurrentRoute();
 }
@@ -236,7 +241,7 @@ async function renderActivity() {
   return element("section", { className: "section" }, [
     activity.length
       ? element("div", { className: "list" }, activity.map(activityCard))
-      : element("div", { className: "empty-state compact", text: "Sin actividad" }),
+      : element("div", { className: "empty-state compact", text: t("activity.empty") }),
   ]);
 }
 
@@ -246,7 +251,7 @@ function renderLicense() {
   const actions = [
     element("button", {
       type: "button",
-      text: "Cambiar",
+      text: t("license.change"),
       onClick: () => {
         showLicenseChoice("personal");
         licenseDialog.showModal();
@@ -255,7 +260,7 @@ function renderLicense() {
     element("button", {
       className: "primary",
       type: "button",
-      text: "Importar",
+      text: t("license.import"),
       onClick: importLicense,
     }),
   ];
@@ -263,14 +268,14 @@ function renderLicense() {
     actions.unshift(element("button", {
       className: "danger",
       type: "button",
-      text: "Remover licencia",
+      text: t("license.remove"),
       onClick: () => runAction("license", () => api.removeLicense()).then(refreshAndRender),
     }));
   }
   return element("section", { className: "section panel license-panel" }, [
     element("div", { className: "license-summary" }, [
       element("div", {}, [
-        element("p", { className: "eyebrow", text: "Estado" }),
+        element("p", { className: "eyebrow", text: t("license.status") }),
         element("h2", { text: licenseLabel(license) }),
         expiration
           ? element("p", {
@@ -282,9 +287,9 @@ function renderLicense() {
       element("div", { className: "inline-actions" }, actions),
     ]),
     element("details", { className: "legal-details" }, [
-      element("summary", { text: "Condiciones" }),
+      element("summary", { text: t("license.terms") }),
       element("p", {
-        text: "Uso personal gratuito. La prueba comercial dura 30 días.",
+        text: t("license.termsSummary"),
       }),
     ]),
   ]);
@@ -316,10 +321,10 @@ function renderGeneralSettings() {
     updateChrome();
     await renderCurrentRoute();
   });
-  const themeSelect = element("select", { ariaLabel: "Tema visual" }, [
-    element("option", { value: "system", text: "Sistema" }),
-    element("option", { value: "light", text: "Claro" }),
-    element("option", { value: "dark", text: "Oscuro" }),
+  const themeSelect = element("select", { ariaLabel: t("settings.themeAria") }, [
+    element("option", { value: "system", text: t("theme.system") }),
+    element("option", { value: "light", text: t("theme.light") }),
+    element("option", { value: "dark", text: t("theme.dark") }),
   ]);
   themeSelect.value = settings.theme;
   themeSelect.addEventListener("change", async () => {
@@ -330,7 +335,7 @@ function renderGeneralSettings() {
   const updatesToggle = element("input", {
     type: "checkbox",
     checked: settings.autoUpdates,
-    ariaLabel: "Comprobar actualizaciones automáticamente",
+    ariaLabel: t("settings.autoUpdatesAria"),
   });
   updatesToggle.addEventListener("change", () => runAction(
     "settings",
@@ -339,12 +344,12 @@ function renderGeneralSettings() {
   const codexEnabled = settings.codexEnabled !== false;
   const codexButton = element("button", {
     type: "button",
-    text: codexEnabled ? "Detener App Server" : "Iniciar App Server",
+    text: t(codexEnabled ? "codex.stop" : "codex.start"),
     onClick: async () => {
       await runAction(
         "codex-toggle",
         () => api.setCodexEnabled(!codexEnabled),
-        codexEnabled ? "Codex App Server detenido." : "Codex App Server iniciado.",
+        t(codexEnabled ? "codex.stopped" : "codex.started"),
       );
       await refreshAndRender();
     },
@@ -353,10 +358,10 @@ function renderGeneralSettings() {
   const updateButton = element("button", {
     type: "button",
     text: updatePhase === "available"
-      ? "Descargar actualización"
+      ? t("updates.download")
       : updatePhase === "downloaded"
-        ? "Reiniciar e instalar"
-        : "Comprobar actualizaciones",
+        ? t("updates.restart")
+        : t("updates.check"),
     onClick: async () => {
       if (updatePhase === "downloaded" && !window.confirm(t("updates.restartConfirm"))) return;
       const result = await runAction(
@@ -366,7 +371,9 @@ function renderGeneralSettings() {
           : updatePhase === "downloaded"
             ? api.installUpdate()
             : api.checkForUpdates(),
-        updatePhase === "available" ? "Descarga iniciada." : "Comprobación completada.",
+        t(updatePhase === "available"
+          ? "updates.downloadStarted"
+          : "updates.checkComplete"),
       );
       if (result) {
         state.bootstrap.updates = result;
@@ -378,37 +385,49 @@ function renderGeneralSettings() {
     updateButton,
     element("button", {
       type: "button",
-      text: "Logs",
+      text: t("tools.logs"),
       onClick: () => runAction("logs", () => api.openLogsFolder()),
     }),
     element("button", {
       type: "button",
-      text: "Diagnóstico",
-      onClick: () => runAction("diagnostic", () => api.exportDiagnostics(), "Diagnóstico exportado."),
+      text: t("tools.diagnostics"),
+      onClick: () => runAction(
+        "diagnostic",
+        () => api.exportDiagnostics(),
+        t("tools.diagnosticsExported"),
+      ),
     }),
     element("button", {
       type: "button",
-      text: "Exportar datos",
-      onClick: () => runAction("export", () => api.exportUserData(), "Exportación completada."),
+      text: t("tools.exportData"),
+      onClick: () => runAction(
+        "export",
+        () => api.exportUserData(),
+        t("tools.exportComplete"),
+      ),
     }),
   ];
   if (state.bootstrap.developmentMode) {
     tools.push(element("button", {
       type: "button",
-      text: "Instalar app desde carpeta",
-      onClick: () => runAction("dev-install", () => api.chooseDevelopmentApp(), "Aplicación local instalada.")
+      text: t("tools.installFolder"),
+      onClick: () => runAction(
+        "dev-install",
+        () => api.chooseDevelopmentApp(),
+        t("tools.localInstalled"),
+      )
         .then(refreshAndRender),
     }));
   }
   return element("div", {}, [
     element("section", { className: "section panel" }, [
       settingControl(t("settings.language"), "", languageSelect),
-      settingControl("Tema", "", themeSelect),
-      settingControl("Actualizaciones automáticas", "", updatesToggle),
+      settingControl(t("settings.theme"), "", themeSelect),
+      settingControl(t("settings.autoUpdates"), "", updatesToggle),
       settingControl("Codex", "", codexButton),
     ]),
     element("section", { className: "section panel" }, [
-      element("h2", { text: "Herramientas" }),
+      element("h2", { text: t("tools.title") }),
       element("div", { className: "inline-actions" }, tools),
     ]),
   ]);
@@ -417,9 +436,17 @@ function renderGeneralSettings() {
 function renderPrivacy() {
   return element("section", { className: "section" }, [
     element("div", { className: "panel privacy-list" }, [
-      settingControl("Datos", "Guardados en este equipo.", badge("Local", "good")),
-      settingControl("IA", "Codex puede conectarse con OpenAI.", badge("Codex")),
-      settingControl("Telemetría", "Cwenti no envía telemetría propia.", badge("Desactivada", "good")),
+      settingControl(
+        t("privacy.data"),
+        t("privacy.dataDescription"),
+        badge("Local", "good"),
+      ),
+      settingControl(t("privacy.ai"), t("privacy.aiDescription"), badge("Codex")),
+      settingControl(
+        t("privacy.telemetry"),
+        t("privacy.telemetryDescription"),
+        badge(t("privacy.disabled"), "good"),
+      ),
     ]),
   ]);
 }
@@ -434,7 +461,10 @@ function renderAbout() {
     }),
     element("div", {}, [
       element("h2", { text: product.productName }),
-      element("p", { className: "muted", text: "Versión 0.1.0" }),
+      element("p", {
+        className: "muted",
+        text: t("about.version", { version: product.version }),
+      }),
       element("button", {
         className: "quiet compact-link",
         type: "button",
@@ -446,11 +476,11 @@ function renderAbout() {
 }
 
 const settingsSections = [
-  ["general", "General"],
-  ["license", "Licencia"],
-  ["activity", "Actividad"],
-  ["privacy", "Privacidad"],
-  ["about", "Acerca de"],
+  ["general", "settings.general"],
+  ["license", "settings.license"],
+  ["activity", "settings.activity"],
+  ["privacy", "settings.privacy"],
+  ["about", "settings.about"],
 ];
 
 function currentSettingsSection() {
@@ -463,7 +493,7 @@ async function renderSettings() {
   const tabs = settingsSections.map(([id, label]) => element("button", {
     className: `settings-tab${id === activeSection ? " active" : ""}`,
     type: "button",
-    text: label,
+    text: t(label),
     onClick: () => { location.hash = `#/settings/${id}`; },
   }));
   const content = activeSection === "license"
@@ -478,7 +508,7 @@ async function renderSettings() {
   return element("div", { className: "settings-view" }, [
     element("nav", {
       className: "settings-tabs",
-      ariaLabel: "Secciones de configuración",
+      ariaLabel: t("settings.sections"),
     }, tabs),
     element("div", { className: "settings-content" }, [content]),
   ]);
@@ -494,7 +524,7 @@ async function renderCurrentRoute() {
     content = route === "settings" ? await renderSettings() : renderLibrary();
   } catch (error) {
     content = element("div", { className: "notice danger" }, [
-      element("h2", { text: "No se pudo cargar esta vista" }),
+      element("h2", { text: t("view.loadError") }),
       element("p", { text: error.message }),
     ]);
   }
@@ -511,14 +541,18 @@ function showLicenseChoice(choice) {
     const declaration = element("input", { type: "checkbox", required: true, id: "personal-declaration" });
     const form = element("form", {}, [
       element("div", { className: "notice" }, [
-        element("p", { text: "Gratis para uso personal y no comercial." }),
+        element("p", { text: t("personal.free") }),
       ]),
       element("label", { className: "check-row" }, [
         declaration,
-        element("span", { text: "Declaro que la información proporcionada es correcta y que este uso no es comercial." }),
+        element("span", { text: t("personal.declaration") }),
       ]),
       element("div", { className: "modal-actions" }, [
-        element("button", { className: "primary", type: "submit", text: "Activar uso personal" }),
+        element("button", {
+          className: "primary",
+          type: "submit",
+          text: t("personal.activate"),
+        }),
       ]),
     ]);
     form.addEventListener("submit", async (event) => {
@@ -536,23 +570,27 @@ function showLicenseChoice(choice) {
     const declaration = element("input", { type: "checkbox", required: true });
     const form = element("form", {}, [
       element("div", { className: "notice warning" }, [
-        element("p", { text: "30 días. Una prueba por organización." }),
+        element("p", { text: t("trial.summary") }),
       ]),
       element("div", { className: "field-grid" }, [
-        field("Organización", organization),
-        field("Correo corporativo", email),
-        field("País", country),
+        field(t("trial.organization"), organization),
+        field(t("trial.email"), email),
+        field(t("trial.country"), country),
       ]),
       element("label", { className: "check-row" }, [
         prior,
-        element("span", { text: "Confirmo que la organización no ha utilizado previamente esta prueba." }),
+        element("span", { text: t("trial.prior") }),
       ]),
       element("label", { className: "check-row" }, [
         declaration,
-        element("span", { text: "Declaro que la información proporcionada es correcta." }),
+        element("span", { text: t("trial.declaration") }),
       ]),
       element("div", { className: "modal-actions" }, [
-        element("button", { className: "primary", type: "submit", text: "Iniciar prueba" }),
+        element("button", {
+          className: "primary",
+          type: "submit",
+          text: t("trial.start"),
+        }),
       ]),
     ]);
     form.addEventListener("submit", async (event) => {
@@ -570,13 +608,13 @@ function showLicenseChoice(choice) {
   } else {
     licensePanel.append(
       element("div", { className: "notice" }, [
-        element("p", { text: "Selecciona tu archivo .license.json." }),
+        element("p", { text: t("license.selectFile") }),
       ]),
       element("div", { className: "modal-actions" }, [
         element("button", {
           className: "primary",
           type: "button",
-          text: "Seleccionar licencia",
+          text: t("license.select"),
           onClick: async () => {
             const result = await importLicense();
             if (result) await finishLicenseSelection();
@@ -594,7 +632,7 @@ async function finishLicenseSelection() {
 }
 
 async function importLicense() {
-  return runAction("license", () => api.importLicense(), "Licencia comercial activada.");
+  return runAction("license", () => api.importLicense(), t("license.activated"));
 }
 
 function showPermissionDialog(app) {
@@ -603,10 +641,10 @@ function showPermissionDialog(app) {
   permissionAppName.textContent = app.name;
   clear(permissionList);
   const labels = {
-    filesystem: "Archivos",
-    shell: "Comandos",
-    network: "Red",
-    externalLinks: "Enlaces externos",
+    filesystem: t("permissions.files"),
+    shell: t("permissions.commands"),
+    network: t("permissions.network"),
+    externalLinks: t("permissions.links"),
   };
   for (const [key, value] of Object.entries(app.permissions)) {
     permissionList.append(
@@ -624,7 +662,7 @@ async function handleCodexAuth() {
   await runAction(
     "codex-auth",
     () => authenticated ? api.logoutCodex() : api.loginCodex(),
-    authenticated ? "Sesión cerrada." : "Complete el inicio de sesión en su navegador.",
+    t(authenticated ? "auth.signedOut" : "auth.completeInBrowser"),
   );
   setTimeout(() => refreshAndRender(), authenticated ? 0 : 1_500);
 }
@@ -686,7 +724,7 @@ navToggle.addEventListener("click", () => {
 refreshButton.addEventListener("click", () => runAction(
   "refresh",
   refreshAndRender,
-  "Información actualizada.",
+  t("refresh.complete"),
 ));
 
 api.onActivity((event) => {
