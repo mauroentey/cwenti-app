@@ -2,6 +2,7 @@ import {
   access,
   lstat,
   mkdir,
+  readFile,
   rm,
   writeFile,
 } from "node:fs/promises";
@@ -17,6 +18,10 @@ const platform = process.env.CWENTI_BUNDLE_PLATFORM?.trim() || process.platform;
 const platformDirectory = platform === "win32" ? "win32" : "darwin";
 const documentsPath = path.join(os.homedir(), "Documents");
 const destinationRoot = path.join(rootPath, "bundled-apps", platformDirectory);
+const registry = JSON.parse(
+  await readFile(path.join(rootPath, "registry", "bundled-apps.json"), "utf8"),
+);
+const versions = new Map(registry.apps.map((app) => [app.id, app.version]));
 
 const definitions = platform === "win32"
   ? [
@@ -138,6 +143,7 @@ for (const definition of definitions) {
   manifest.apps.push({
     id: definition.id,
     productName: definition.name,
+    version: versions.get(definition.id),
     relativePath: path.relative(destinationRoot, destination),
   });
 }

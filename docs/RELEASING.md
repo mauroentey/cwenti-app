@@ -1,25 +1,24 @@
-# Publicación y firma
+# Releases and signing
 
 ## Preparación
 
-1. Publique un ZIP de Clax, Kaikei y Noman para cada plataforma.
-2. Ejecute `npm ci`, `npm run verify`, `npm run test:smoke` y `npm run licenses`.
-3. Compruebe que no existen secretos ni claves privadas.
-4. Actualice la versión de `package.json` y cree el tag `vX.Y.Z`.
-5. Construya cada sistema en su runner correspondiente.
+1. Publish the macOS and Windows ZIPs for Clax, Kaikei, and Noman.
+2. Record each immutable release URL, exact byte size, and SHA-256 digest in
+   `registry/suite-lock.json`.
+3. Run `npm ci`, `npm run verify`, `npm run test:smoke`, and `npm run licenses`.
+4. Confirm that no private keys or secrets are tracked.
+5. Update `package.json` and create the matching `vX.Y.Z` tag.
+6. Let each operating system build on its native GitHub Actions runner.
 
-Los ZIP no viven en Git. El workflow usa estas variables del repositorio:
-
-- `CWENTI_CLAX_MAC_URL`, `CWENTI_KAIKEI_MAC_URL`, `CWENTI_NOMAN_MAC_URL`.
-- `CWENTI_CLAX_WIN_URL`, `CWENTI_KAIKEI_WIN_URL`, `CWENTI_NOMAN_WIN_URL`.
-
-Si los archivos están protegidos, `CWENTI_BUNDLE_TOKEN` debe permitir su
-descarga. `npm run download:apps` valida que cada ZIP contenga la aplicación
-correcta y `npm run stage:apps` prepara el recurso que se incluye en Cwenti.
+The ZIP payloads are not stored in Git. `npm run download:apps` accepts only the
+three public, version-matched GitHub release URLs listed in the lock file,
+enforces a 15-minute and 2 GiB limit, and verifies both size and SHA-256 before
+extracting anything. `npm run stage:apps` then prepares the verified Electron
+bundles included in Cwenti.
 
 ## macOS
 
-Configure certificado Developer ID, hardened runtime y notarización mediante:
+Configure Developer ID signing, hardened runtime, and notarization with:
 
 - `CSC_LINK`
 - `CSC_KEY_PASSWORD`
@@ -27,32 +26,34 @@ Configure certificado Developer ID, hardened runtime y notarización mediante:
 - `APPLE_APP_SPECIFIC_PASSWORD`
 - `APPLE_TEAM_ID`
 
-No publique un DMG sin verificar firma, notarización y Gatekeeper.
+Do not announce a DMG as trusted until signing, notarization, and Gatekeeper
+verification pass.
 
 ## Windows
 
-Configure Authenticode mediante:
+Configure Authenticode with:
 
 - `WIN_CSC_LINK`
 - `WIN_CSC_KEY_PASSWORD`
 
-Pruebe instalación, desinstalación, accesos directos y conservación de datos.
+Test install, uninstall, shortcuts, and user-data preservation.
 
 ## Actualizaciones
 
-`electron-builder` publica en GitHub Releases el instalador, su blockmap y los
-manifiestos `latest*.yml`. La aplicación empaquetada consulta ese canal con
-`electron-updater`, pero no descarga automáticamente: el usuario confirma la
-descarga y la instalación desde Configuración.
+`electron-builder` generates each installer, blockmap, and `latest*.yml`
+manifest. The workflow publishes them to GitHub Releases only after both native
+package jobs and the embedded-suite checks pass. The packaged application
+checks that channel with `electron-updater`, but does not download
+automatically: the user confirms the download and installation from Settings.
 
-Cada release vuelve a incluir Clax, Kaikei y Noman. Al reemplazar Cwenti se
-reemplazan también las tres copias integradas, por lo que no hay versiones
-sueltas.
+Every release includes Clax, Kaikei, and Noman again. Replacing Cwenti replaces
+all three integrated copies, so the installed suite cannot drift across app
+versions.
 
-El repositorio `mauroentey/cwenti-app` o, como mínimo, el servidor de
-actualizaciones debe ser públicamente accesible. Una aplicación de usuario final
-no puede descargar releases privadas sin distribuir credenciales.
+The `mauroentey/cwenti-app` repository and update releases must stay publicly
+accessible. A user-facing app cannot safely consume private releases without
+distributing credentials.
 
-El workflow `Publish Cwenti suite` también se puede iniciar manualmente con un
-tag existente. Antes de anunciar una release, instale el artefacto en un equipo
-limpio, abra las tres apps y pruebe la actualización desde la versión anterior.
+The `Publish Cwenti suite` workflow can also be started manually for an existing
+tag. Before announcing a release, install it on a clean machine, open all three
+apps, and test an update from the previous Cwenti version.

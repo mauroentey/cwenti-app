@@ -5,6 +5,9 @@ const requestedBundlePlatform = process.env.CWENTI_BUNDLE_PLATFORM?.trim();
 const bundlePlatform = ["darwin", "win32"].includes(requestedBundlePlatform)
   ? requestedBundlePlatform
   : process.platform === "win32" ? "win32" : "darwin";
+const macSigningConfigured = Boolean(
+  process.env.CSC_LINK?.trim() || process.env.CSC_NAME?.trim(),
+);
 const publish = updateUrl
   ? [{ provider: "generic", url: updateUrl }]
   : [{
@@ -56,7 +59,7 @@ export default {
   mac: {
     category: "public.app-category.productivity",
     icon: "assets/icons/icon.icns",
-    identity: "-",
+    identity: macSigningConfigured ? undefined : "-",
     hardenedRuntime: true,
     entitlements: "assets/entitlements.mac.plist",
     entitlementsInherit: "assets/entitlements.mac.plist",

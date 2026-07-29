@@ -1,4 +1,4 @@
-name: Verify desktop app
+name: Verify and package Cwenti
 
 on:
   push:
@@ -9,23 +9,43 @@ permissions:
   contents: read
 
 jobs:
-  verify:
+  package:
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: macos-latest
+            platform: darwin
+            arch: arm64
+            command: npm run dist:mac:arm64
+            artifact: macos-arm64
           - os: windows-latest
+            platform: win32
+            arch: x64
+            command: npm run dist:win
+            artifact: windows-x64
 
     runs-on: ${{ matrix.os }}
+    env:
+      CWENTI_BUNDLE_PLATFORM: ${{ matrix.platform }}
+      CWENTI_BUNDLE_ARCH: ${{ matrix.arch }}
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run lint
-      - run: npm test
-      - run: npm run validate:registry
+      - run: npm run download:apps
+      - run: ${{ matrix.command }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Cwenti-${{ matrix.artifact }}
+          path: |
+            release/*.dmg
+            release/*.zip
+            release/*.exe
+            release/*.blockmap
+            release/*.yml
+          if-no-files-found: error

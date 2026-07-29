@@ -1,6 +1,6 @@
 {
   "name": "cwenti",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Cwenti brings Clax, Kaikei, and Noman together in a local desktop library powered by Codex App Server.",
   "author": {
@@ -20,19 +20,21 @@
     "lint": "eslint .",
     "test": "node --test tests/*.test.js",
     "test:smoke": "node tests/electron-smoke.js",
+    "audit:dependencies": "npm audit --audit-level=high",
     "download:apps": "node scripts/download-suite-bundles.js",
     "stage:apps": "node scripts/stage-bundled-apps.js",
+    "verify:packaged-suite": "node scripts/verify-packaged-suite.js",
     "validate:registry": "node scripts/validate-registry.js",
     "licenses": "node scripts/generate-third-party-notices.js",
-    "pack": "npm run verify && npm run stage:apps && electron-builder --dir --publish never --config electron-builder.config.js",
-    "dist:win": "npm run verify && npm run stage:apps && electron-builder --win nsis --x64 --publish never --config electron-builder.config.js",
+    "pack": "npm run verify && npm run stage:apps && electron-builder --dir --publish never --config electron-builder.config.js && npm run verify:packaged-suite",
+    "dist:win": "npm run verify && npm run stage:apps && electron-builder --win nsis --x64 --publish never --config electron-builder.config.js && npm run verify:packaged-suite",
     "dist:win:portable": "npm run verify && npm run stage:apps && electron-builder --win portable --x64 --publish never --config electron-builder.config.js",
     "dist:mac": "npm run dist:mac:arm64",
-    "dist:mac:x64": "npm run verify && npm run stage:apps && electron-builder --mac dmg zip --x64 --publish never --config electron-builder.config.js",
-    "dist:mac:arm64": "npm run verify && npm run stage:apps && electron-builder --mac dmg zip --arm64 --publish never --config electron-builder.config.js",
-    "release:mac:arm64": "npm run verify && npm run stage:apps && electron-builder --mac dmg zip --arm64 --publish always --config electron-builder.config.js",
-    "release:win": "npm run verify && npm run stage:apps && electron-builder --win nsis --x64 --publish always --config electron-builder.config.js",
-    "verify": "npm run lint && npm test && npm run validate:registry"
+    "dist:mac:x64": "npm run verify && npm run stage:apps && electron-builder --mac dmg zip --x64 --publish never --config electron-builder.config.js && npm run verify:packaged-suite",
+    "dist:mac:arm64": "npm run verify && npm run stage:apps && electron-builder --mac dmg zip --arm64 --publish never --config electron-builder.config.js && npm run verify:packaged-suite",
+    "release:mac:arm64": "npm run dist:mac:arm64",
+    "release:win": "npm run dist:win",
+    "verify": "npm run audit:dependencies && npm run lint && npm test && npm run validate:registry"
   },
   "dependencies": {
     "ajv": "8.20.0",
@@ -48,5 +50,10 @@
     "eslint": "10.8.0",
     "globals": "17.8.0",
     "license-checker-rseidelsohn": "5.0.1"
+  },
+  "overrides": {
+    "brace-expansion": "5.0.8",
+    "fast-uri": "3.1.4",
+    "tar": "7.5.22"
   }
 }
