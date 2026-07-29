@@ -1,6 +1,5 @@
 import {
   access,
-  cp,
   lstat,
   mkdir,
   rm,
@@ -10,6 +9,7 @@ import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { copyBundle } from "./copy-bundle.js";
 
 const scriptPath = fileURLToPath(import.meta.url);
 const rootPath = path.resolve(path.dirname(scriptPath), "..");
@@ -134,11 +134,7 @@ for (const definition of definitions) {
     ? path.join(destinationRoot, definition.name)
     : path.join(destinationRoot, `${definition.name}.app`);
   process.stdout.write(`Incluyendo ${definition.name} desde ${source}\n`);
-  await cp(source, destination, {
-    recursive: true,
-    dereference: false,
-    preserveTimestamps: true,
-  });
+  await copyBundle(source, destination);
   manifest.apps.push({
     id: definition.id,
     productName: definition.name,

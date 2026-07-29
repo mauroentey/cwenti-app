@@ -1,6 +1,5 @@
 import { createWriteStream } from "node:fs";
 import {
-  cp,
   mkdtemp,
   mkdir,
   readdir,
@@ -13,6 +12,7 @@ import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
 import { fileURLToPath } from "node:url";
 import extract from "extract-zip";
+import { copyBundle } from "./copy-bundle.js";
 
 const scriptPath = fileURLToPath(import.meta.url);
 const rootPath = path.resolve(path.dirname(scriptPath), "..");
@@ -85,11 +85,7 @@ for (const definition of definitions) {
     const destination = platform === "win32"
       ? path.join(destinationRoot, definition.name)
       : path.join(destinationRoot, expectedName);
-    await cp(source, destination, {
-      recursive: true,
-      dereference: false,
-      preserveTimestamps: true,
-    });
+    await copyBundle(source, destination);
   } finally {
     await rm(temporaryRoot, { recursive: true, force: true });
   }
