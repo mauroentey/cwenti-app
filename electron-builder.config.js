@@ -56,6 +56,7 @@ export default {
   mac: {
     category: "public.app-category.productivity",
     icon: "assets/icons/icon.icns",
+    identity: "-",
     hardenedRuntime: true,
     entitlements: "assets/entitlements.mac.plist",
     entitlementsInherit: "assets/entitlements.mac.plist",
