@@ -12,3 +12,18 @@ test("release workflow never exports an empty signing path", async () => {
   assert.match(workflow, /write_env CSC_LINK "\$MAC_CSC_LINK"/);
   assert.match(workflow, /write_env WIN_CSC_LINK "\$WINDOWS_CSC_LINK"/);
 });
+
+test("release workflow publishes only updater YAML metadata", async () => {
+  const releaseWorkflow = await readFile(
+    new URL("../.github/workflows/release.yml", import.meta.url),
+    "utf8",
+  );
+  const buildWorkflow = await readFile(
+    new URL("../.github/workflows/build.yml", import.meta.url),
+    "utf8",
+  );
+  for (const workflow of [releaseWorkflow, buildWorkflow]) {
+    assert.match(workflow, /release\/latest\*\.yml/);
+    assert.doesNotMatch(workflow, /release\/\*\.yml/);
+  }
+});

@@ -99,7 +99,7 @@ jobs:
             release/*.zip
             release/*.exe
             release/*.blockmap
-            release/*.yml
+            release/latest*.yml
           if-no-files-found: error
 
   publish:
