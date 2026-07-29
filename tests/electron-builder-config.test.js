@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import test from "node:test";
+import builderConfig from "../electron-builder.config.js";
 
 const inspectConfig = `
   import config from "./electron-builder.config.js";
@@ -28,4 +29,8 @@ test("selecciona explícitamente las apps de macOS para el paquete macOS", () =>
 
 test("selecciona explícitamente las apps de Windows en una compilación cruzada", () => {
   assert.equal(bundledAppsPath("win32"), "bundled-apps/win32");
+});
+
+test("firma el paquete macOS de forma ad hoc cuando no hay Developer ID", () => {
+  assert.equal(builderConfig.mac.identity, "-");
 });
