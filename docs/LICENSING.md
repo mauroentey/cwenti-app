@@ -57,11 +57,17 @@ production license issuer.
 
 - `LICENSE` contains the Prosperity Public License 3.0.0 with the contributor and
   source-code fields completed.
-- `package.json` and `package-lock.json` use the `Prosperity-3.0.0` identifier.
+- `package.json` and `package-lock.json` use npm's
+  `SEE LICENSE IN LICENSE` form because Prosperity 3.0.0 does not have an SPDX
+  identifier.
 - Electron packaging includes the public, commercial, trademark, and third-party
   notices.
 - Automated tests validate the metadata and both production public keys.
 - Third-party notices exclude Cwenti itself and list only dependencies.
+
+GitHub may display this license as `Other` or `NOASSERTION`. That is expected
+for a non-SPDX source-available license and does not mean the `LICENSE` file is
+missing.
 
 ## Remaining operational work
 

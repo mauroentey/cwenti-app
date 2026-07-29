@@ -9,7 +9,7 @@
   },
   "type": "module",
   "main": "src/main/main.js",
-  "license": "Prosperity-3.0.0",
+  "license": "SEE LICENSE IN LICENSE",
   "engines": {
     "node": ">=22.0.0",
     "npm": ">=10.0.0"
