@@ -34,13 +34,6 @@ jobs:
     env:
       CWENTI_BUNDLE_PLATFORM: ${{ matrix.bundle_platform }}
       CWENTI_BUNDLE_ARCH: ${{ matrix.bundle_arch }}
-      CSC_LINK: ${{ matrix.bundle_platform == 'darwin' && secrets.CSC_LINK || '' }}
-      CSC_KEY_PASSWORD: ${{ matrix.bundle_platform == 'darwin' && secrets.CSC_KEY_PASSWORD || '' }}
-      APPLE_ID: ${{ matrix.bundle_platform == 'darwin' && secrets.APPLE_ID || '' }}
-      APPLE_APP_SPECIFIC_PASSWORD: ${{ matrix.bundle_platform == 'darwin' && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
-      APPLE_TEAM_ID: ${{ matrix.bundle_platform == 'darwin' && secrets.APPLE_TEAM_ID || '' }}
-      WIN_CSC_LINK: ${{ matrix.bundle_platform == 'win32' && secrets.WIN_CSC_LINK || '' }}
-      WIN_CSC_KEY_PASSWORD: ${{ matrix.bundle_platform == 'win32' && secrets.WIN_CSC_KEY_PASSWORD || '' }}
 
     steps:
       - uses: actions/checkout@v5
@@ -50,6 +43,45 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Configure available signing credentials
+        shell: bash
+        env:
+          MAC_CSC_LINK: ${{ secrets.CSC_LINK }}
+          MAC_CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          MAC_APPLE_ID: ${{ secrets.APPLE_ID }}
+          MAC_APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          MAC_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          WINDOWS_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WINDOWS_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+        run: |
+          write_env() {
+            local name="$1"
+            local value="$2"
+            if [[ -z "$value" ]]; then
+              return
+            fi
+            local delimiter="CWENTI_${RANDOM}_${RANDOM}"
+            {
+              printf '%s<<%s\n' "$name" "$delimiter"
+              printf '%s\n' "$value"
+              printf '%s\n' "$delimiter"
+            } >> "$GITHUB_ENV"
+          }
+
+          if [[ "$CWENTI_BUNDLE_PLATFORM" == "darwin" ]]; then
+            write_env CSC_LINK "$MAC_CSC_LINK"
+            write_env CSC_KEY_PASSWORD "$MAC_CSC_KEY_PASSWORD"
+            if [[ -n "$MAC_APPLE_ID" &&
+                  -n "$MAC_APPLE_APP_SPECIFIC_PASSWORD" &&
+                  -n "$MAC_APPLE_TEAM_ID" ]]; then
+              write_env APPLE_ID "$MAC_APPLE_ID"
+              write_env APPLE_APP_SPECIFIC_PASSWORD "$MAC_APPLE_APP_SPECIFIC_PASSWORD"
+              write_env APPLE_TEAM_ID "$MAC_APPLE_TEAM_ID"
+            fi
+          else
+            write_env WIN_CSC_LINK "$WINDOWS_CSC_LINK"
+            write_env WIN_CSC_KEY_PASSWORD "$WINDOWS_CSC_KEY_PASSWORD"
+          fi
       - run: npm ci
       - name: Validate tag and package version
         shell: bash
