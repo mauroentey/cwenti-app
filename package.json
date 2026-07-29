@@ -1,0 +1,52 @@
+{
+  "name": "cwenti",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cwenti reúne Clax, Kaikei y Noman en un launcher local impulsado por Codex App Server.",
+  "author": {
+    "name": "Mauricio Samper",
+    "email": "mauro@entey.net"
+  },
+  "type": "module",
+  "main": "src/main/main.js",
+  "license": "Prosperity-3.0.0",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
+  "scripts": {
+    "dev": "electron .",
+    "start": "electron .",
+    "lint": "eslint .",
+    "test": "node --test tests/*.test.js",
+    "test:smoke": "node tests/electron-smoke.js",
+    "download:apps": "node scripts/download-suite-bundles.js",
+    "stage:apps": "node scripts/stage-bundled-apps.js",
+    "validate:registry": "node scripts/validate-registry.js",
+    "licenses": "node scripts/generate-third-party-notices.js",
+    "pack": "npm run verify && npm run stage:apps && electron-builder --dir --publish never --config electron-builder.config.js",
+    "dist:win": "npm run verify && npm run stage:apps && electron-builder --win nsis --x64 --publish never --config electron-builder.config.js",
+    "dist:win:portable": "npm run verify && npm run stage:apps && electron-builder --win portable --x64 --publish never --config electron-builder.config.js",
+    "dist:mac": "npm run dist:mac:arm64",
+    "dist:mac:x64": "npm run verify && npm run stage:apps && electron-builder --mac dmg zip --x64 --publish never --config electron-builder.config.js",
+    "dist:mac:arm64": "npm run verify && npm run stage:apps && electron-builder --mac dmg zip --arm64 --publish never --config electron-builder.config.js",
+    "release:mac:arm64": "npm run verify && npm run stage:apps && electron-builder --mac dmg zip --arm64 --publish always --config electron-builder.config.js",
+    "release:win": "npm run verify && npm run stage:apps && electron-builder --win nsis --x64 --publish always --config electron-builder.config.js",
+    "verify": "npm run lint && npm test && npm run validate:registry"
+  },
+  "dependencies": {
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "electron-updater": "6.8.9",
+    "extract-zip": "2.0.1",
+    "semver": "7.8.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "electron": "43.2.0",
+    "electron-builder": "26.15.3",
+    "eslint": "10.8.0",
+    "globals": "17.8.0",
+    "license-checker-rseidelsohn": "5.0.1"
+  }
+}

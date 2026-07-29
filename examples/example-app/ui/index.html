@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    >
+    <title>Ejemplo de proyecto</title>
+    <link rel="stylesheet" href="app.css">
+  </head>
+  <body>
+    <header class="app-bar">
+      <div>
+        <p class="eyebrow">Aplicación oficial</p>
+        <h1>Ejemplo de proyecto</h1>
+      </div>
+      <div class="app-status">
+        <span id="agent-status">Agente detenido</span>
+        <button id="stop-task" class="danger" type="button">Detener tarea</button>
+        <button id="back-launcher" type="button">Volver al launcher</button>
+      </div>
+    </header>
+    <main>
+      <section class="workspace-card" aria-labelledby="workspace-title">
+        <div>
+          <p class="eyebrow">Proyecto activo</p>
+          <h2 id="workspace-title">Sin carpeta seleccionada</h2>
+          <p id="workspace-path">El launcher limitará el acceso a la carpeta que elija.</p>
+        </div>
+        <button id="choose-workspace" type="button">Elegir workspace</button>
+      </section>
+
+      <section class="conversation" aria-labelledby="task-title">
+        <h2 id="task-title">Nueva tarea</h2>
+        <label for="task-input">¿Qué debe hacer Codex dentro de este proyecto?</label>
+        <textarea id="task-input" rows="5" maxlength="12000" placeholder="Por ejemplo: resume la estructura de esta carpeta."></textarea>
+        <div class="actions">
+          <button id="run-task" class="primary" type="button">Iniciar tarea</button>
+        </div>
+        <p id="message" role="status" aria-live="polite"></p>
+      </section>
+
+      <section aria-labelledby="activity-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Actividad normalizada</p>
+            <h2 id="activity-title">Eventos de Codex</h2>
+          </div>
+        </div>
+        <ol id="activity-list" class="activity-list"></ol>
+      </section>
+
+      <dialog id="approval-dialog">
+        <form method="dialog">
+          <p class="eyebrow">Aprobación puntual</p>
+          <h2 id="approval-title">Acción solicitada</h2>
+          <dl id="approval-details"></dl>
+          <div class="dialog-actions">
+            <button value="reject" class="danger">Rechazar</button>
+            <button value="session">Permitir durante esta sesión</button>
+            <button value="once" class="primary">Permitir una vez</button>
+          </div>
+        </form>
+      </dialog>
+    </main>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

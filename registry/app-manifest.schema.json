@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/schemas/official-app-manifest.json",
+  "title": "Official launcher application manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "name",
+    "version",
+    "description",
+    "author",
+    "entry",
+    "icon",
+    "instructions",
+    "license",
+    "minimumLauncherVersion",
+    "supportedPlatforms",
+    "supportedArchitectures",
+    "permissions",
+    "permissionReasons"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,63}$" },
+    "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"
+    },
+    "description": { "type": "string", "minLength": 1, "maxLength": 600 },
+    "author": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "repository": { "type": "string", "format": "uri", "pattern": "^https://" },
+    "homepage": { "type": "string", "format": "uri", "pattern": "^https://" },
+    "entry": { "$ref": "#/$defs/safeRelativePath" },
+    "icon": { "$ref": "#/$defs/safeRelativePath" },
+    "previewImage": { "$ref": "#/$defs/safeRelativePath" },
+    "instructions": { "$ref": "#/$defs/safeRelativePath" },
+    "license": { "const": "Prosperity-3.0.0" },
+    "minimumLauncherVersion": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "supportedPlatforms": {
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": { "enum": ["darwin", "win32"] }
+    },
+    "supportedArchitectures": {
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": { "enum": ["x64", "arm64"] }
+    },
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["filesystem", "shell", "network", "externalLinks"],
+      "properties": {
+        "filesystem": { "enum": ["none", "selected-workspace"] },
+        "shell": { "enum": ["none", "ask"] },
+        "network": { "enum": ["none", "ask"] },
+        "externalLinks": { "enum": ["none", "ask"] }
+      }
+    },
+    "permissionReasons": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["filesystem", "shell", "network", "externalLinks"],
+      "properties": {
+        "filesystem": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "shell": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "network": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "externalLinks": { "type": "string", "minLength": 1, "maxLength": 300 }
+      }
+    },
+    "declaredExecutables": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/safeRelativePath" }
+    }
+  },
+  "$defs": {
+    "safeRelativePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240,
+      "pattern": "^(?![A-Za-z][A-Za-z0-9+.-]*:)(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[A-Za-z0-9._@() -]+(?:/[A-Za-z0-9._@() -]+)*$"
+    }
+  }
+}

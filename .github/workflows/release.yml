@@ -1,0 +1,68 @@
+name: Publish Cwenti suite
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing tag to publish, for example v0.1.0
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+      matrix:
+        include:
+          - os: macos-latest
+            bundle_platform: darwin
+            command: npm run release:mac:arm64
+            clax_url: ${{ vars.CWENTI_CLAX_MAC_URL }}
+            kaikei_url: ${{ vars.CWENTI_KAIKEI_MAC_URL }}
+            noman_url: ${{ vars.CWENTI_NOMAN_MAC_URL }}
+          - os: windows-latest
+            bundle_platform: win32
+            command: npm run release:win
+            clax_url: ${{ vars.CWENTI_CLAX_WIN_URL }}
+            kaikei_url: ${{ vars.CWENTI_KAIKEI_WIN_URL }}
+            noman_url: ${{ vars.CWENTI_NOMAN_WIN_URL }}
+
+    runs-on: ${{ matrix.os }}
+    env:
+      CWENTI_BUNDLE_PLATFORM: ${{ matrix.bundle_platform }}
+      CWENTI_CLAX_BUNDLE_URL: ${{ matrix.clax_url }}
+      CWENTI_KAIKEI_BUNDLE_URL: ${{ matrix.kaikei_url }}
+      CWENTI_NOMAN_BUNDLE_URL: ${{ matrix.noman_url }}
+      CWENTI_BUNDLE_TOKEN: ${{ secrets.CWENTI_BUNDLE_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CSC_LINK: ${{ secrets.CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+      WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate tag and package version
+        shell: bash
+        run: |
+          expected="v$(node -p "require('./package.json').version")"
+          actual="${{ inputs.release_tag || github.ref_name }}"
+          test "$actual" = "$expected"
+      - run: npm run download:apps
+      - run: ${{ matrix.command }}

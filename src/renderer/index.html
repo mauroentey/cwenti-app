@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'"
+    >
+    <title>Cwenti</title>
+    <link rel="stylesheet" href="styles/tokens.css">
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components.css">
+  </head>
+  <body>
+    <div class="shell">
+      <header id="app-header" class="app-header">
+        <div class="brand">
+          <button
+            id="nav-toggle"
+            class="nav-toggle"
+            type="button"
+            aria-label="Collapse navigation"
+            data-i18n-aria-label="nav.collapse"
+            aria-controls="primary-nav header-status"
+            aria-expanded="true"
+          >
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </button>
+          <img class="brand-mark" src="../../assets/branding/cwenti-icon.png" alt="">
+          <p id="product-name" class="brand-name">Cwenti</p>
+        </div>
+        <nav id="primary-nav" aria-label="Primary navigation" data-i18n-aria-label="nav.primary">
+          <a href="#/library" data-route="library" data-i18n="library">Library</a>
+          <a href="#/settings" data-route="settings" data-i18n="settings">Settings</a>
+        </nav>
+        <div class="header-actions">
+          <div id="header-status" class="header-status">
+            <div class="status-line">
+              <span id="codex-dot" class="status-dot" aria-hidden="true"></span>
+              <span id="codex-sidebar-status">Codex</span>
+            </div>
+          </div>
+          <button id="quick-login" type="button" data-i18n="account.label">Account</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <header class="topbar">
+          <h1 id="page-title" data-i18n="library">Library</h1>
+          <div class="topbar-actions">
+            <button
+              id="refresh-button"
+              class="icon-button"
+              type="button"
+              aria-label="Refresh information"
+              data-i18n-aria-label="refresh.label"
+            >↻</button>
+          </div>
+        </header>
+        <div id="view" class="view" tabindex="-1"></div>
+      </main>
+    </div>
+
+    <dialog id="license-onboarding" class="modal modal-large" aria-labelledby="license-onboarding-title">
+      <div class="modal-header">
+        <h2 id="license-onboarding-title" data-i18n="onboarding.title">Choose how you will use Cwenti</h2>
+        <p data-i18n="onboarding.localOnly">Saved only on this device.</p>
+      </div>
+      <div class="choice-grid" role="tablist" aria-label="Usage type" data-i18n-aria-label="onboarding.mode">
+        <button type="button" data-license-choice="personal" data-i18n="onboarding.personal">Personal</button>
+        <button type="button" data-license-choice="trial" data-i18n="onboarding.trial">Trial · 30 days</button>
+        <button type="button" data-license-choice="commercial" data-i18n="onboarding.license">License</button>
+      </div>
+      <div id="license-choice-panel"></div>
+      <div class="modal-actions">
+        <button id="license-later" class="quiet" type="button" data-i18n="onboarding.later">Not now, explore Cwenti</button>
+      </div>
+    </dialog>
+
+    <dialog id="permission-dialog" class="modal" aria-labelledby="permission-title">
+      <form id="permission-form">
+        <div class="modal-header">
+          <h2 id="permission-title" data-i18n="permissions.title">Application permissions</h2>
+          <p id="permission-app-name"></p>
+        </div>
+        <dl id="permission-list" class="permission-list"></dl>
+        <label class="check-row">
+          <input id="permission-declaration" type="checkbox" required>
+          <span data-i18n="permissions.accept">I accept these permissions.</span>
+        </label>
+        <div class="modal-actions">
+          <button id="permission-cancel" type="button" data-i18n="permissions.cancel">Cancel</button>
+          <button class="primary" type="submit" data-i18n="permissions.open">Accept and open</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+    <script type="module" src="scripts/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "example-notes",
+  "name": "Ejemplo de proyecto",
+  "version": "0.1.0",
+  "description": "Aplicación oficial de referencia para validar la integración segura con el launcher.",
+  "author": "Mauricio Samper",
+  "entry": "ui/index.html",
+  "icon": "assets/icon.svg",
+  "previewImage": "assets/preview.svg",
+  "instructions": "instructions/AGENTS.md",
+  "license": "Prosperity-3.0.0",
+  "minimumLauncherVersion": "0.1.0",
+  "supportedPlatforms": ["darwin", "win32"],
+  "supportedArchitectures": ["x64", "arm64"],
+  "permissions": {
+    "filesystem": "selected-workspace",
+    "shell": "ask",
+    "network": "ask",
+    "externalLinks": "ask"
+  },
+  "permissionReasons": {
+    "filesystem": "Leer y escribir únicamente archivos elegidos dentro del workspace activo.",
+    "shell": "Permitir que Codex proponga comandos, siempre con aprobación puntual.",
+    "network": "Permitir que Codex solicite acceso de red con aprobación puntual.",
+    "externalLinks": "Abrir documentación HTTPS únicamente después de una acción del usuario."
+  },
+  "declaredExecutables": []
+}
