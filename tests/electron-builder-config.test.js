@@ -42,4 +42,12 @@ test("firma el paquete macOS de forma ad hoc cuando no hay Developer ID", () => 
     entitlements,
     /<key>com\.apple\.security\.cs\.disable-library-validation<\/key>\s*<true\/>/,
   );
+  assert.match(
+    entitlements,
+    /<key>com\.apple\.security\.cs\.allow-jit<\/key>\s*<true\/>/,
+  );
+  assert.match(
+    entitlements,
+    /<key>com\.apple\.security\.cs\.allow-unsigned-executable-memory<\/key>\s*<true\/>/,
+  );
 });
