@@ -1,7 +1,10 @@
 import { productConfig } from "./config/product.config.js";
 
 const updateUrl = process.env.LAUNCHER_UPDATE_URL?.trim();
-const bundlePlatform = process.platform === "win32" ? "win32" : "darwin";
+const requestedBundlePlatform = process.env.CWENTI_BUNDLE_PLATFORM?.trim();
+const bundlePlatform = ["darwin", "win32"].includes(requestedBundlePlatform)
+  ? requestedBundlePlatform
+  : process.platform === "win32" ? "win32" : "darwin";
 const publish = updateUrl
   ? [{ provider: "generic", url: updateUrl }]
   : [{
