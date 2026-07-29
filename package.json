@@ -2,7 +2,7 @@
   "name": "cwenti",
   "version": "0.1.0",
   "private": true,
-  "description": "Cwenti reúne Clax, Kaikei y Noman en un launcher local impulsado por Codex App Server.",
+  "description": "Cwenti brings Clax, Kaikei, and Noman together in a local desktop library powered by Codex App Server.",
   "author": {
     "name": "Mauricio Samper",
     "email": "mauro@entey.net"
