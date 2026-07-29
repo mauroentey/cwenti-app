@@ -27,8 +27,8 @@ test("repository metadata consistently applies Prosperity 3.0.0", async () => {
   const license = await read("LICENSE");
   const builderConfig = await read("electron-builder.config.js");
 
-  assert.equal(packageMetadata.license, "Prosperity-3.0.0");
-  assert.equal(packageLock.packages[""].license, "Prosperity-3.0.0");
+  assert.equal(packageMetadata.license, "SEE LICENSE IN LICENSE");
+  assert.equal(packageLock.packages[""].license, "SEE LICENSE IN LICENSE");
   assert.match(license, /^# The Prosperity Public License 3\.0\.0/m);
   assert.match(license, /^Contributor: Mauricio Samper$/m);
   assert.match(license, /^Source Code: https:\/\/github\.com\/mauroentey\/cwenti-app$/m);
